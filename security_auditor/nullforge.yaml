@@ -1,0 +1,15 @@
+# NullForge Project Configuration
+project:
+  name: security_auditor
+  version: "0.1.0"
+  language: python
+
+agent:
+  max_iterations: 100
+  enable_self_correction: true
+  enable_code_review: true
+
+security:
+  enable_sandboxing: true
+  allow_shell: true
+  allow_network: true

@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aol-cli-fire"
+version = "2.0.0"
+description = "AOL-CLI Fire Edition - The Ultimate AI Coding Agent"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "AOL-CLI Contributors"}]
+keywords = [
+    "ai", "agent", "cli", "llm", "automation", 
+    "programming", "langchain", "langgraph",
+    "coding-assistant", "multi-agent",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1.7",
+    "rich>=13.7.0",
+    "langchain>=0.2.0",
+    "langchain-core>=0.2.0",
+    "langgraph>=0.2.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "httpx>=0.26.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+full = [
+    "duckduckgo-search>=4.1.0",
+    "beautifulsoup4>=4.12.0",
+    "trafilatura>=1.6.0",
+    "gitpython>=3.1.40",
+    "chromadb>=0.4.22",
+    "pygments>=2.17.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-mock>=3.12.0",
+    "black>=24.1.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+fire = "main:main"
+aol-fire = "main:main"
+
+[project.urls]
+Homepage = "https://github.com/aol-cli/aol-cli-fire"
+Documentation = "https://github.com/aol-cli/aol-cli-fire#readme"
+Repository = "https://github.com/aol-cli/aol-cli-fire"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aol_fire*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

@@ -1,0 +1,23 @@
+# NullForge
+.env
+*.log
+.nullforge/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
