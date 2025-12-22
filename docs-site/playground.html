@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NullForge Playground - Interactive AI Code Synthesis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --bg-input: #0d0d14;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --border-color: rgba(139, 92, 246, 0.2);
+            --gradient-1: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 50%, #ec4899 100%);
+            --gradient-2: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background-image: 
+                linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: var(--gradient-1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            -webkit-text-fill-color: white;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-purple);
+        }
+
+        /* Main Layout */
+        .playground-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 1fr;
+            gap: 1px;
+            height: calc(100vh - 65px);
+            background: var(--border-color);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .provider-select, .model-select, .preset-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .provider-select:focus, .model-select:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+        }
+
+        .param-group {
+            margin-bottom: 1rem;
+        }
+
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .param-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--gradient-2);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .toggle-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: var(--accent-purple);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Prompt Panel */
+        .prompt-panel {
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prompt-input {
+            flex: 1;
+            padding: 1.5rem;
+            background: var(--bg-input);
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+        }
+
+        .prompt-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .prompt-actions {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .run-btn {
+            padding: 0.75rem 2rem;
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .run-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
+        }
+
+        .run-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .run-btn.running {
+            background: var(--accent-orange);
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .output-tab {
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .output-tab.active {
+            color: var(--accent-cyan);
+        }
+
+        .output-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-cyan);
+        }
+
+        .output-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        .output-content pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* Status Indicators */
+        .status-bar {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .status-dot.error { background: var(--accent-red); }
+        .status-dot.running { background: var(--accent-orange); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Plan Display */
+        .plan-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .plan-item.completed {
+            border-left-color: var(--accent-green);
+            opacity: 0.8;
+        }
+
+        .plan-item.running {
+            border-left-color: var(--accent-orange);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+        }
+
+        .plan-step {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .plan-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* File Tree */
+        .file-tree {
+            font-size: 0.85rem;
+        }
+
+        .file-item {
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .file-icon {
+            font-size: 1rem;
+        }
+
+        .file-name {
+            color: var(--text-secondary);
+        }
+
+        .file-name.new {
+            color: var(--accent-green);
+        }
+
+        /* Code Syntax Highlighting (Basic) */
+        .code-keyword { color: var(--accent-purple); }
+        .code-string { color: var(--accent-green); }
+        .code-comment { color: var(--text-muted); }
+        .code-function { color: var(--accent-cyan); }
+        .code-number { color: var(--accent-orange); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .playground-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr 1fr;
+            }
+
+            .sidebar {
+                display: flex;
+                gap: 2rem;
+                overflow-x: auto;
+            }
+
+            .sidebar-section {
+                min-width: 200px;
+                margin-bottom: 0;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Examples Panel */
+        .examples-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .example-card {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .example-card:hover {
+            border-color: var(--accent-purple);
+            transform: translateX(4px);
+        }
+
+        .example-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .example-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Streaming animation */
+        .streaming-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent-cyan);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <header>
+        <a href="index.html" class="logo">
+            <div class="logo-icon">⚡</div>
+            NullForge Playground
+        </a>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="sharePlayground()">
+                📤 Share
+            </button>
+            <a href="https://github.com/RemyLoveLogicAI/NullForge" class="btn btn-primary">
+                ⭐ Star on GitHub
+            </a>
+        </div>
+    </header>
+
+    <div class="playground-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">🤖 Provider</div>
+                <select class="provider-select" id="providerSelect" onchange="updateModels()">
+                    <option value="venice">Venice AI (Uncensored)</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="ollama">Ollama (Local)</option>
+                    <option value="groq">Groq</option>
+                    <option value="together">Together AI</option>
+                    <option value="openrouter">OpenRouter</option>
+                </select>
+
+                <div class="sidebar-title">🧠 Model</div>
+                <select class="model-select" id="modelSelect">
+                    <option value="llama-3.1-405b">llama-3.1-405b</option>
+                    <option value="dolphin-2.9.2-qwen2-72b">dolphin-2.9.2-qwen2-72b</option>
+                </select>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">⚙️ Parameters</div>
+                
+                <div class="param-group">
+                    <div class="param-label">
+                        <span>Temperature</span>
+                        <span class="param-value" id="tempValue">0.7</span>
+                    </div>
+                    <input type="range" class="slider" id="temperature" min="0" max="2" step="0.1" value="0.7" 
+                           oninput="document.getElementById('tempValue').textContent = this.value">
+                </div>
+
+                <div class="param-group">
+                    <div class="param-label">
+                        <span>Max Tokens</span>
+                        <span class="param-value" id="tokensValue">4096</span>
+                    </div>
+                    <input type="range" class="slider" id="maxTokens" min="256" max="16384" step="256" value="4096"
+                           oninput="document.getElementById('tokensValue').textContent = this.value">
+                </div>
+
+                <div class="toggle-group">
+                    <span class="toggle-label">🔧 Enable Shell Tools</span>
+                    <div class="toggle active" id="shellToggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="toggle-group">
+                    <span class="toggle-label">📁 Enable File Tools</span>
+                    <div class="toggle active" id="fileToggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+
+                <div class="toggle-group">
+                    <span class="toggle-label">🌐 Enable Web Search</span>
+                    <div class="toggle" id="webToggle" onclick="this.classList.toggle('active')"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">📚 Examples</div>
+                <div class="examples-grid">
+                    <div class="example-card" onclick="loadExample('rest-api')">
+                        <div class="example-title">REST API</div>
+                        <div class="example-desc">FastAPI with JWT auth</div>
+                    </div>
+                    <div class="example-card" onclick="loadExample('cli-tool')">
+                        <div class="example-title">CLI Tool</div>
+                        <div class="example-desc">Click-based CLI app</div>
+                    </div>
+                    <div class="example-card" onclick="loadExample('scraper')">
+                        <div class="example-title">Web Scraper</div>
+                        <div class="example-desc">Async scraping with aiohttp</div>
+                    </div>
+                    <div class="example-card" onclick="loadExample('discord-bot')">
+                        <div class="example-title">Discord Bot</div>
+                        <div class="example-desc">Bot with slash commands</div>
+                    </div>
+                    <div class="example-card" onclick="loadExample('ml-pipeline')">
+                        <div class="example-title">ML Pipeline</div>
+                        <div class="example-desc">Scikit-learn training</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prompt Panel -->
+        <div class="prompt-panel">
+            <div class="panel-header">
+                <div class="panel-title">📝 Task Description</div>
+                <button class="btn btn-secondary" onclick="clearPrompt()">Clear</button>
+            </div>
+            <textarea class="prompt-input" id="promptInput" placeholder="Describe what you want to build...
+
+Example:
+Build a REST API for a todo application with:
+- User authentication using JWT
+- CRUD operations for todos
+- SQLite database with SQLAlchemy
+- Input validation with Pydantic
+- Unit tests with pytest"></textarea>
+            <div class="prompt-actions">
+                <span class="char-count"><span id="charCount">0</span> characters</span>
+                <button class="run-btn" id="runBtn" onclick="runSynthesis()">
+                    <span>⚡</span> Synthesize
+                </button>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="output-panel">
+            <div class="output-tabs">
+                <button class="output-tab active" onclick="switchTab('plan')">📋 Plan</button>
+                <button class="output-tab" onclick="switchTab('output')">📄 Output</button>
+                <button class="output-tab" onclick="switchTab('files')">📁 Files</button>
+                <button class="output-tab" onclick="switchTab('logs')">📊 Logs</button>
+            </div>
+            <div class="output-content" id="outputContent">
+                <div id="planView">
+                    <p style="color: var(--text-muted); text-align: center; padding: 3rem;">
+                        Enter a task description and click Synthesize to begin...
+                    </p>
+                </div>
+                <div id="outputView" style="display: none;"></div>
+                <div id="filesView" style="display: none;"></div>
+                <div id="logsView" style="display: none;"></div>
+            </div>
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Ready</span>
+                </div>
+                <span id="tokenUsage">Tokens: 0 / 4096</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let isRunning = false;
+        let currentTab = 'plan';
+        
+        // Models by provider
+        const providerModels = {
+            venice: ['llama-3.1-405b', 'dolphin-2.9.2-qwen2-72b', 'llama-3.1-70b'],
+            openai: ['gpt-4-turbo-preview', 'gpt-4o', 'gpt-3.5-turbo'],
+            anthropic: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
+            ollama: ['llama3.1:70b', 'deepseek-coder-v2:latest', 'dolphin-mixtral'],
+            groq: ['llama-3.1-70b-versatile', 'mixtral-8x7b-32768'],
+            together: ['meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo'],
+            openrouter: ['anthropic/claude-3.5-sonnet', 'meta-llama/llama-3.1-8b-instruct:free']
+        };
+
+        // Examples
+        const examples = {
+            'rest-api': `Build a REST API for a todo application with:
+- User authentication using JWT tokens
+- CRUD operations for todos (create, read, update, delete)
+- SQLite database with SQLAlchemy ORM
+- Input validation with Pydantic models
+- Proper error handling and status codes
+- Unit tests with pytest
+- Docker support with docker-compose`,
+            
+            'cli-tool': `Create a CLI tool for managing dotfiles with:
+- Commands: init, add, remove, sync, status
+- Git-based backup to remote repository
+- Symlink management for config files
+- Interactive setup wizard
+- Support for multiple profiles
+- Colorful terminal output with Rich`,
+            
+            'scraper': `Build an async web scraper with:
+- Concurrent requests using aiohttp
+- Rate limiting and retry logic
+- CSS selector and XPath support
+- Export to JSON, CSV, and SQLite
+- Proxy rotation support
+- Command-line interface
+- Progress bar and logging`,
+            
+            'discord-bot': `Create a Discord bot with:
+- Slash commands for moderation
+- Music playback from YouTube
+- Custom welcome messages
+- Leveling system with XP
+- Database storage with SQLite
+- Error handling and logging
+- Docker deployment ready`,
+            
+            'ml-pipeline': `Build a machine learning pipeline with:
+- Data loading and preprocessing
+- Feature engineering helpers
+- Model training with cross-validation
+- Hyperparameter tuning with Optuna
+- Model serialization and loading
+- Prediction API endpoint
+- Performance metrics dashboard`
+        };
+
+        // Update prompt character count
+        document.getElementById('promptInput').addEventListener('input', function() {
+            document.getElementById('charCount').textContent = this.value.length;
+        });
+
+        // Update models when provider changes
+        function updateModels() {
+            const provider = document.getElementById('providerSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            const models = providerModels[provider] || [];
+            
+            modelSelect.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join('');
+        }
+
+        // Load example
+        function loadExample(exampleId) {
+            const prompt = examples[exampleId];
+            if (prompt) {
+                document.getElementById('promptInput').value = prompt;
+                document.getElementById('charCount').textContent = prompt.length;
+            }
+        }
+
+        // Clear prompt
+        function clearPrompt() {
+            document.getElementById('promptInput').value = '';
+            document.getElementById('charCount').textContent = '0';
+        }
+
+        // Switch output tab
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('planView').style.display = tab === 'plan' ? 'block' : 'none';
+            document.getElementById('outputView').style.display = tab === 'output' ? 'block' : 'none';
+            document.getElementById('filesView').style.display = tab === 'files' ? 'block' : 'none';
+            document.getElementById('logsView').style.display = tab === 'logs' ? 'block' : 'none';
+        }
+
+        // Run synthesis (simulated)
+        async function runSynthesis() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt || isRunning) return;
+
+            isRunning = true;
+            const runBtn = document.getElementById('runBtn');
+            runBtn.innerHTML = '<span>⏳</span> Running...';
+            runBtn.classList.add('running');
+            runBtn.disabled = true;
+
+            updateStatus('running', 'Analyzing task...');
+
+            // Simulate planning phase
+            const planView = document.getElementById('planView');
+            planView.innerHTML = '<div class="plan-item running"><div class="plan-step">Step 1/5</div><div class="plan-title">🧠 Analyzing requirements...</div><div class="plan-status">Processing</div></div>';
+
+            await sleep(1500);
+
+            // Simulated plan
+            const plan = [
+                { title: 'Set up project structure', status: 'completed' },
+                { title: 'Create data models', status: 'completed' },
+                { title: 'Implement core logic', status: 'running' },
+                { title: 'Add API endpoints', status: 'pending' },
+                { title: 'Write tests', status: 'pending' }
+            ];
+
+            // Update plan view progressively
+            for (let i = 0; i < plan.length; i++) {
+                await sleep(1000);
+                plan[i].status = i < 2 ? 'completed' : (i === 2 ? 'running' : 'pending');
+                renderPlan(plan);
+                
+                if (i === 2) {
+                    updateStatus('running', 'Implementing core logic...');
+                }
+            }
+
+            // Simulate file generation
+            await sleep(1500);
+            plan[2].status = 'completed';
+            plan[3].status = 'running';
+            renderPlan(plan);
+            updateStatus('running', 'Generating API endpoints...');
+
+            await sleep(1500);
+            plan[3].status = 'completed';
+            plan[4].status = 'running';
+            renderPlan(plan);
+            updateStatus('running', 'Writing tests...');
+
+            await sleep(1500);
+            plan[4].status = 'completed';
+            renderPlan(plan);
+
+            // Show files
+            renderFiles([
+                { name: 'main.py', icon: '🐍', new: true },
+                { name: 'models.py', icon: '🐍', new: true },
+                { name: 'routes.py', icon: '🐍', new: true },
+                { name: 'database.py', icon: '🐍', new: true },
+                { name: 'tests/', icon: '📁', new: true },
+                { name: 'requirements.txt', icon: '📄', new: true },
+                { name: 'Dockerfile', icon: '🐳', new: true },
+                { name: 'README.md', icon: '📖', new: true }
+            ]);
+
+            // Show output
+            document.getElementById('outputView').innerHTML = `<pre><span class="code-comment"># Generated by NullForge</span>
+<span class="code-comment"># Task: ${prompt.substring(0, 50)}...</span>
+
+<span class="code-keyword">from</span> fastapi <span class="code-keyword">import</span> FastAPI, Depends, HTTPException
+<span class="code-keyword">from</span> sqlalchemy.orm <span class="code-keyword">import</span> Session
+<span class="code-keyword">from</span> . <span class="code-keyword">import</span> models, schemas, database
+
+app = <span class="code-function">FastAPI</span>(title=<span class="code-string">"Generated API"</span>)
+
+<span class="code-keyword">@app.get</span>(<span class="code-string">"/"</span>)
+<span class="code-keyword">async def</span> <span class="code-function">root</span>():
+    <span class="code-keyword">return</span> {<span class="code-string">"status"</span>: <span class="code-string">"ok"</span>, <span class="code-string">"version"</span>: <span class="code-string">"1.0.0"</span>}
+
+<span class="code-comment"># ... more generated code ...</span>
+</pre>`;
+
+            // Show logs
+            document.getElementById('logsView').innerHTML = `<pre style="color: var(--text-secondary);">[${new Date().toISOString()}] Starting NullForge synthesis...
+[${new Date().toISOString()}] Provider: ${document.getElementById('providerSelect').value}
+[${new Date().toISOString()}] Model: ${document.getElementById('modelSelect').value}
+[${new Date().toISOString()}] Temperature: ${document.getElementById('temperature').value}
+[${new Date().toISOString()}] Planning phase completed (5 subtasks)
+[${new Date().toISOString()}] Executing subtask 1/5: Set up project structure
+[${new Date().toISOString()}] Executing subtask 2/5: Create data models
+[${new Date().toISOString()}] Executing subtask 3/5: Implement core logic
+[${new Date().toISOString()}] Executing subtask 4/5: Add API endpoints
+[${new Date().toISOString()}] Executing subtask 5/5: Write tests
+[${new Date().toISOString()}] <span style="color: var(--accent-green);">✓ Synthesis completed successfully</span>
+[${new Date().toISOString()}] Generated 8 files, 1,247 lines of code
+[${new Date().toISOString()}] Token usage: 3,892 / 4,096</pre>`;
+
+            updateStatus('ready', 'Completed successfully');
+            document.getElementById('tokenUsage').textContent = 'Tokens: 3,892 / 4,096';
+
+            runBtn.innerHTML = '<span>⚡</span> Synthesize';
+            runBtn.classList.remove('running');
+            runBtn.disabled = false;
+            isRunning = false;
+        }
+
+        function renderPlan(plan) {
+            const html = plan.map((item, i) => `
+                <div class="plan-item ${item.status}">
+                    <div class="plan-step">Step ${i + 1}/${plan.length}</div>
+                    <div class="plan-title">${item.status === 'completed' ? '✅' : item.status === 'running' ? '⏳' : '⏸️'} ${item.title}</div>
+                    <div class="plan-status">${item.status.charAt(0).toUpperCase() + item.status.slice(1)}</div>
+                </div>
+            `).join('');
+            document.getElementById('planView').innerHTML = html;
+        }
+
+        function renderFiles(files) {
+            const html = `<div class="file-tree">${files.map(f => `
+                <div class="file-item">
+                    <span class="file-icon">${f.icon}</span>
+                    <span class="file-name ${f.new ? 'new' : ''}">${f.name}</span>
+                </div>
+            `).join('')}</div>`;
+            document.getElementById('filesView').innerHTML = html;
+        }
+
+        function updateStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            dot.className = 'status-dot ' + (status === 'running' ? 'running' : status === 'error' ? 'error' : '');
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function sharePlayground() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Playground URL copied to clipboard!');
+            });
+        }
+
+        // Initialize
+        updateModels();
+    </script>
+</body>
+</html>

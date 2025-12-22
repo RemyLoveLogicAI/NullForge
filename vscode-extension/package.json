@@ -1,0 +1,208 @@
+{
+  "name": "nullforge",
+  "displayName": "NullForge - AI Code Synthesis",
+  "description": "Autonomous AI-powered code synthesis and automation directly in VS Code",
+  "version": "1.0.0",
+  "publisher": "nullforge",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RemyLoveLogicAI/NullForge"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "code generation",
+    "automation",
+    "llm",
+    "copilot",
+    "assistant"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "nullforge.synthesize",
+        "title": "NullForge: Synthesize Code",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "nullforge.synthesizeSelection",
+        "title": "NullForge: Synthesize from Selection"
+      },
+      {
+        "command": "nullforge.audit",
+        "title": "NullForge: Audit Current File"
+      },
+      {
+        "command": "nullforge.auditProject",
+        "title": "NullForge: Audit Project"
+      },
+      {
+        "command": "nullforge.chat",
+        "title": "NullForge: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "nullforge.configure",
+        "title": "NullForge: Configure Provider"
+      },
+      {
+        "command": "nullforge.showHistory",
+        "title": "NullForge: Show Synthesis History"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "nullforge.synthesizeSelection",
+          "group": "nullforge@1",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "nullforge.audit",
+          "group": "nullforge@2"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "nullforge.synthesize",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "nullforge.auditProject",
+          "group": "nullforge@1"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "nullforge.synthesize",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "nullforge.chat",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n"
+      }
+    ],
+    "configuration": {
+      "title": "NullForge",
+      "properties": {
+        "nullforge.provider": {
+          "type": "string",
+          "default": "venice",
+          "enum": ["openai", "venice", "anthropic", "ollama", "groq", "together", "openrouter"],
+          "description": "LLM provider to use"
+        },
+        "nullforge.model": {
+          "type": "string",
+          "default": "llama-3.1-405b",
+          "description": "Model to use for synthesis"
+        },
+        "nullforge.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for the selected provider"
+        },
+        "nullforge.apiBase": {
+          "type": "string",
+          "default": "",
+          "description": "Custom API base URL (optional)"
+        },
+        "nullforge.temperature": {
+          "type": "number",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature"
+        },
+        "nullforge.maxTokens": {
+          "type": "number",
+          "default": 4096,
+          "minimum": 256,
+          "maximum": 32768,
+          "description": "Maximum tokens in response"
+        },
+        "nullforge.enableShellTools": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable shell command execution"
+        },
+        "nullforge.enableFileTools": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable file read/write operations"
+        },
+        "nullforge.autoSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-save generated files"
+        },
+        "nullforge.showInlineCompletion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline completion suggestions"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nullforge",
+          "title": "NullForge",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "nullforge": [
+        {
+          "id": "nullforge.chat",
+          "name": "Chat",
+          "type": "webview"
+        },
+        {
+          "id": "nullforge.history",
+          "name": "History"
+        },
+        {
+          "id": "nullforge.tasks",
+          "name": "Active Tasks"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "eventsource": "^2.0.0"
+  }
+}

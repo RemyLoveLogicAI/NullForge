@@ -1,0 +1,12 @@
+{
+  "name": "nullforge-docs",
+  "version": "1.0.0",
+  "description": "NullForge Documentation Site - Autonomous Enterprise Software Platform",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "start": "python -m http.server 8080"
+  },
+  "keywords": ["nullforge", "ai", "cli", "automation", "documentation"],
+  "author": "RemyLoveLogicAI",
+  "license": "MIT"
+}
