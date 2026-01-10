@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NullForge AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 400px;
+      min-height: 500px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header .badge {
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+    }
+    .tabs {
+      display: flex;
+      background: #1a1a2e;
+      border-bottom: 1px solid #333;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .tab:hover { background: #252540; }
+    .tab.active {
+      border-bottom-color: #667eea;
+      background: #252540;
+    }
+    .content { padding: 16px; }
+    .input-group { margin-bottom: 16px; }
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    textarea, select, input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      background: #252540;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 14px;
+      resize: vertical;
+    }
+    textarea:focus, select:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    textarea { min-height: 100px; }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .output {
+      background: #0d0d1a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      display: none;
+    }
+    .output.visible { display: block; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+    .status.connected { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+    .status.disconnected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .history-item {
+      background: #252540;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .history-item:hover { background: #333355; }
+    .history-item .prompt {
+      font-size: 13px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-item .meta {
+      font-size: 11px;
+      color: #666;
+    }
+    .settings-group {
+      background: #252540;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .settings-group h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+    .toggle-switch {
+      width: 44px;
+      height: 24px;
+      background: #333;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .toggle-switch.active { background: #667eea; }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    .toggle-switch.active::after { transform: translateX(20px); }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .quick-action {
+      background: #252540;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .quick-action:hover {
+      background: #333355;
+      border-color: #667eea;
+    }
+    .quick-action .icon { font-size: 24px; margin-bottom: 4px; }
+    .quick-action .label { font-size: 11px; color: #888; }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .loading.visible { display: block; }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #333;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg width="32" height="32" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#667eea"/>
+          <stop offset="100%" style="stop-color:#764ba2"/>
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="45" fill="url(#grad)"/>
+      <text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">N</text>
+    </svg>
+    <div>
+      <h1>NullForge AI</h1>
+      <span class="badge">Enterprise</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="synthesize">Synthesize</div>
+    <div class="tab" data-tab="history">History</div>
+    <div class="tab" data-tab="settings">Settings</div>
+  </div>
+
+  <div class="content" id="synthesize-tab">
+    <div class="status connected" id="connection-status">
+      <span class="status-dot"></span>
+      <span>Connected to NullForge API</span>
+    </div>
+
+    <div class="input-group">
+      <label>What would you like to build?</label>
+      <textarea id="prompt" placeholder="Describe your code synthesis task...&#10;&#10;Example: Build a REST API with user authentication using FastAPI"></textarea>
+    </div>
+
+    <div class="input-group">
+      <label>Provider</label>
+      <select id="provider">
+        <option value="venice">Venice (Uncensored)</option>
+        <option value="openai">OpenAI GPT-4</option>
+        <option value="anthropic">Anthropic Claude</option>
+        <option value="ollama">Ollama (Local)</option>
+        <option value="groq">Groq (Fast)</option>
+        <option value="together">Together AI</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" id="synthesize-btn">
+      ⚡ Synthesize Code
+    </button>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Synthesizing your code...</div>
+    </div>
+
+    <div class="output" id="output"></div>
+
+    <div class="quick-actions">
+      <div class="quick-action" data-template="rest-api">
+        <div class="icon">🌐</div>
+        <div class="label">REST API</div>
+      </div>
+      <div class="quick-action" data-template="cli-tool">
+        <div class="icon">💻</div>
+        <div class="label">CLI Tool</div>
+      </div>
+      <div class="quick-action" data-template="web-scraper">
+        <div class="icon">🕷️</div>
+        <div class="label">Web Scraper</div>
+      </div>
+      <div class="quick-action" data-template="discord-bot">
+        <div class="icon">🤖</div>
+        <div class="label">Discord Bot</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content" id="history-tab" style="display: none;">
+    <div id="history-list"></div>
+  </div>
+
+  <div class="content" id="settings-tab" style="display: none;">
+    <div class="settings-group">
+      <h3>🔌 API Configuration</h3>
+      <div class="input-group">
+        <label>API Endpoint</label>
+        <input type="text" id="api-endpoint" value="http://localhost:8000">
+      </div>
+      <div class="input-group">
+        <label>API Key (optional)</label>
+        <input type="text" id="api-key" placeholder="Enter your API key">
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3>⚙️ Preferences</h3>
+      <div class="toggle">
+        <span>Enable Shell Commands</span>
+        <div class="toggle-switch active" id="toggle-shell"></div>
+      </div>
+      <div class="toggle">
+        <span>Enable File Operations</span>
+        <div class="toggle-switch active" id="toggle-files"></div>
+      </div>
+      <div class="toggle">
+        <span>Enable Web Search</span>
+        <div class="toggle-switch" id="toggle-web"></div>
+      </div>
+      <div class="toggle">
+        <span>Auto-copy to Clipboard</span>
+        <div class="toggle-switch active" id="toggle-clipboard"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3>🎨 Theme</h3>
+      <div class="toggle">
+        <span>Dark Mode</span>
+        <div class="toggle-switch active" id="toggle-dark"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

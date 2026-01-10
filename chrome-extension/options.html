@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NullForge Settings</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 40px;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .header h1 { font-size: 28px; }
+    .section {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #888;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      background: #252540;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 14px;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #333;
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-switch {
+      width: 48px;
+      height: 26px;
+      background: #333;
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .toggle-switch.active { background: #667eea; }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    .toggle-switch.active::after { transform: translateX(22px); }
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+      background: #333;
+      color: #e0e0e0;
+      margin-left: 12px;
+    }
+    .btn-secondary:hover { background: #444; }
+    .actions { margin-top: 24px; text-align: right; }
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+    }
+    .status.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    .status.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <svg width="48" height="48" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#667eea"/>
+            <stop offset="100%" style="stop-color:#764ba2"/>
+          </linearGradient>
+        </defs>
+        <circle cx="50" cy="50" r="45" fill="url(#grad)"/>
+        <text x="50" y="65" text-anchor="middle" fill="white" font-size="40" font-weight="bold">N</text>
+      </svg>
+      <div>
+        <h1>NullForge Settings</h1>
+        <p style="color: #666;">Configure your AI-powered code synthesis</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔌 API Configuration</h2>
+      <div class="form-group">
+        <label>API Endpoint</label>
+        <input type="text" id="apiEndpoint" value="http://localhost:8000">
+      </div>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="password" id="apiKey" placeholder="Enter your API key (optional)">
+      </div>
+      <div class="form-group">
+        <label>Default Provider</label>
+        <select id="defaultProvider">
+          <option value="venice">Venice (Uncensored)</option>
+          <option value="openai">OpenAI GPT-4</option>
+          <option value="anthropic">Anthropic Claude</option>
+          <option value="ollama">Ollama (Local)</option>
+          <option value="groq">Groq (Fast)</option>
+          <option value="together">Together AI</option>
+          <option value="openrouter">OpenRouter</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⚙️ Tool Permissions</h2>
+      <div class="toggle-row">
+        <div>
+          <div>Enable Shell Commands</div>
+          <small style="color: #666;">Allow executing system commands</small>
+        </div>
+        <div class="toggle-switch active" id="enableShell"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Enable File Operations</div>
+          <small style="color: #666;">Allow reading and writing files</small>
+        </div>
+        <div class="toggle-switch active" id="enableFiles"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Enable Web Search</div>
+          <small style="color: #666;">Allow searching the web</small>
+        </div>
+        <div class="toggle-switch" id="enableWebSearch"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Enable Git Operations</div>
+          <small style="color: #666;">Allow Git commands</small>
+        </div>
+        <div class="toggle-switch active" id="enableGit"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🎨 User Interface</h2>
+      <div class="toggle-row">
+        <div>
+          <div>Show Floating Button</div>
+          <small style="color: #666;">Display button on supported sites</small>
+        </div>
+        <div class="toggle-switch active" id="showFloatingButton"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Show Inline Toolbar</div>
+          <small style="color: #666;">Show quick actions on code blocks</small>
+        </div>
+        <div class="toggle-switch active" id="showInlineToolbar"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Auto-copy Results</div>
+          <small style="color: #666;">Automatically copy results to clipboard</small>
+        </div>
+        <div class="toggle-switch" id="autoCopy"></div>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div>Desktop Notifications</div>
+          <small style="color: #666;">Show notifications on completion</small>
+        </div>
+        <div class="toggle-switch active" id="showNotifications"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔧 Advanced</h2>
+      <div class="form-group">
+        <label>Temperature</label>
+        <input type="range" id="temperature" min="0" max="100" value="70">
+        <small style="color: #666;">Controls creativity (0 = focused, 100 = creative)</small>
+      </div>
+      <div class="form-group">
+        <label>Max Tokens</label>
+        <input type="number" id="maxTokens" value="4096" min="256" max="32000">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset to Defaults</button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    // Load settings
+    async function loadSettings() {
+      const settings = await chrome.storage.sync.get([
+        'apiEndpoint', 'apiKey', 'defaultProvider',
+        'enableShell', 'enableFiles', 'enableWebSearch', 'enableGit',
+        'showFloatingButton', 'showInlineToolbar', 'autoCopy', 'showNotifications',
+        'temperature', 'maxTokens'
+      ]);
+
+      document.getElementById('apiEndpoint').value = settings.apiEndpoint || 'http://localhost:8000';
+      document.getElementById('apiKey').value = settings.apiKey || '';
+      document.getElementById('defaultProvider').value = settings.defaultProvider || 'venice';
+      
+      setToggle('enableShell', settings.enableShell !== false);
+      setToggle('enableFiles', settings.enableFiles !== false);
+      setToggle('enableWebSearch', settings.enableWebSearch === true);
+      setToggle('enableGit', settings.enableGit !== false);
+      setToggle('showFloatingButton', settings.showFloatingButton !== false);
+      setToggle('showInlineToolbar', settings.showInlineToolbar !== false);
+      setToggle('autoCopy', settings.autoCopy === true);
+      setToggle('showNotifications', settings.showNotifications !== false);
+      
+      document.getElementById('temperature').value = settings.temperature || 70;
+      document.getElementById('maxTokens').value = settings.maxTokens || 4096;
+    }
+
+    function setToggle(id, value) {
+      const el = document.getElementById(id);
+      if (value) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    }
+
+    function getToggle(id) {
+      return document.getElementById(id).classList.contains('active');
+    }
+
+    // Toggle click handler
+    document.querySelectorAll('.toggle-switch').forEach(el => {
+      el.addEventListener('click', () => el.classList.toggle('active'));
+    });
+
+    // Save settings
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const settings = {
+        apiEndpoint: document.getElementById('apiEndpoint').value,
+        apiKey: document.getElementById('apiKey').value,
+        defaultProvider: document.getElementById('defaultProvider').value,
+        enableShell: getToggle('enableShell'),
+        enableFiles: getToggle('enableFiles'),
+        enableWebSearch: getToggle('enableWebSearch'),
+        enableGit: getToggle('enableGit'),
+        showFloatingButton: getToggle('showFloatingButton'),
+        showInlineToolbar: getToggle('showInlineToolbar'),
+        autoCopy: getToggle('autoCopy'),
+        showNotifications: getToggle('showNotifications'),
+        temperature: parseInt(document.getElementById('temperature').value),
+        maxTokens: parseInt(document.getElementById('maxTokens').value)
+      };
+
+      await chrome.storage.sync.set(settings);
+      
+      const status = document.getElementById('status');
+      status.textContent = 'Settings saved successfully!';
+      status.className = 'status success';
+      setTimeout(() => status.className = 'status', 3000);
+    });
+
+    // Reset settings
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      await chrome.storage.sync.clear();
+      await loadSettings();
+      
+      const status = document.getElementById('status');
+      status.textContent = 'Settings reset to defaults';
+      status.className = 'status success';
+      setTimeout(() => status.className = 'status', 3000);
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>

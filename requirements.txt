@@ -65,6 +65,15 @@ pytest>=7.4.0
 pytest-asyncio>=0.23.0
 pytest-mock>=3.12.0
 
+# Embedding Models (for AI Memory)
+sentence-transformers>=2.2.0
+
+# MCP Protocol
+mcp>=0.9.0
+
+# Additional AI Dependencies
+tiktoken>=0.5.0
+
 # Optional: Local model support
 # llama-cpp-python>=0.2.0
 # transformers>=4.36.0

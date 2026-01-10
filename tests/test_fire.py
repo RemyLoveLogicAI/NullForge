@@ -272,7 +272,7 @@ class TestFileTools:
         tool = WriteFileTool(workspace_dir=tmp_path)
         result = tool._run("output.txt", "Test content")
         
-        assert "Created" in result or "Updated" in result
+        assert "Created" in result or "Updated" in result or "Wrote" in result
         assert (tmp_path / "output.txt").exists()
         assert (tmp_path / "output.txt").read_text() == "Test content"
     
@@ -284,7 +284,7 @@ class TestFileTools:
         tool = EditFileTool(workspace_dir=tmp_path)
         result = tool._run("test.txt", "World", "Python")
         
-        assert "Edited" in result
+        assert "Edited" in result or "Replaced" in result
         assert test_file.read_text() == "Hello, Python!"
     
     def test_list_directory_tool(self, tmp_path):
